@@ -10,8 +10,6 @@ interface NavbarProps {
   activeSitesCount: number;
   hasReconciledSalary: boolean;
   onLockPortal?: () => void;
-  onOpenSecurityModal?: () => void;
-  activeRole?: 'ADMIN' | 'IOCL_OFFICER' | 'AUDITOR' | 'EMPLOYEE';
 }
 
 export const Navbar: FC<NavbarProps> = ({
@@ -22,8 +20,6 @@ export const Navbar: FC<NavbarProps> = ({
   activeSitesCount,
   hasReconciledSalary,
   onLockPortal,
-  onOpenSecurityModal,
-  activeRole = 'IOCL_OFFICER',
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
@@ -134,21 +130,6 @@ export const Navbar: FC<NavbarProps> = ({
 
           {/* Quick Action Buttons */}
           <div className="flex items-center gap-2">
-            {onOpenSecurityModal && (
-              <button
-                id="btn-portal-security"
-                onClick={onOpenSecurityModal}
-                className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold px-2.5 sm:px-3 py-2 rounded-lg border border-emerald-300 transition-all active:scale-98 shadow-2xs"
-                title="Company Portal Security Gateway, RBAC & Audit Trail"
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span className="hidden sm:inline">Portal Security:</span>
-                <span className="font-mono text-[11px] text-emerald-700 underline decoration-emerald-400">
-                  {activeRole === 'IOCL_OFFICER' ? 'IOCL Officer' : activeRole === 'ADMIN' ? 'Admin' : activeRole === 'AUDITOR' ? 'Auditor' : 'Employee'}
-                </span>
-              </button>
-            )}
-
             <button
               id="btn-add-personnel-header"
               onClick={onAddNewPersonnel}

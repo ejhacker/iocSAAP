@@ -22,9 +22,7 @@ import { SalaryDisbursementView } from './components/SalaryDisbursementView';
 import { SiteSummaryCards } from './components/SiteSummaryCards';
 import { AddPersonnelModal } from './components/AddPersonnelModal';
 import { PaySlipModal } from './components/PaySlipModal';
-import { CompanyPortalSecurityModal } from './components/CompanyPortalSecurityModal';
 import { AccessGate } from './components/AccessGate';
-import { portalApi } from './services/api';
 import { ShieldCheck, FileSpreadsheet, Users, Calculator, CheckCircle2, Sparkles, X } from 'lucide-react';
 
 const STORAGE_KEY_PERSONNEL = 'iocl_contractor_personnel_v2_1000';
@@ -151,10 +149,6 @@ export default function App() {
     }
   }, []);
 
-  // Enforce Access Gate for Authorized Indian Oil Personnel (trial121)
-  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
-  const [activePortalRole, setActivePortalRole] = useState<'ADMIN' | 'IOCL_OFFICER' | 'AUDITOR' | 'EMPLOYEE'>('IOCL_OFFICER');
-
   // When attendance is processed by authorized officer (100% automated matching & salary calculation)
   const handleAttendanceProcessed = (submission: AttendanceSubmission) => {
     setCurrentSubmission(submission);
@@ -178,14 +172,6 @@ export default function App() {
     setAutoNotification(
       `Attendance processed automatically! Matched ${result.summary.matchedCount} personnel from master database. Month's pro-rated salaries, overtime (${result.summary.totalOvertimeHours} hrs), and statutory deductions calculated on the basis of attendance. "Download Final Attendance & Salary (.xlsx)" is ready.`
     );
-
-    // Synchronize with backend API and record cryptographic audit log
-    portalApi.verifyAttendance({
-      siteId: submission.siteId,
-      month: submission.month,
-      workingDays: submission.totalWorkingDaysInMonth,
-      records: submission.records,
-    }).catch((err) => console.log('Backend sync note:', err.message));
   };
 
   // Direct upload from Salary view with instant automatic calculation
@@ -255,8 +241,6 @@ export default function App() {
 
   // Personnel CRUD
   const handleSavePersonnel = (person: Personnel) => {
-    const isExisting = personnelList.some((p) => p.id === person.id);
-
     setPersonnelList((prev) => {
       const existsIndex = prev.findIndex((p) => p.id === person.id);
       if (existsIndex >= 0) {
@@ -267,13 +251,6 @@ export default function App() {
         return [person, ...prev];
       }
     });
-
-    // Background sync to backend API
-    if (isExisting) {
-      portalApi.updatePersonnel(person.id, person).catch((err) => console.log('Backend sync note:', err.message));
-    } else {
-      portalApi.createPersonnel(person).catch((err) => console.log('Backend sync note:', err.message));
-    }
 
     // Re-run reconciliation if salary sheet is active
     if (currentSubmission) {
@@ -297,7 +274,6 @@ export default function App() {
   const handleDeletePersonnel = (id: string) => {
     if (window.confirm('Are you sure you want to remove/relieve this personnel from the active deployment database?')) {
       setPersonnelList((prev) => prev.filter((p) => p.id !== id));
-      portalApi.deletePersonnel(id).catch((err) => console.log('Backend sync note:', err.message));
     }
   };
 
@@ -320,8 +296,6 @@ export default function App() {
         activeSitesCount={sitesList.length}
         hasReconciledSalary={!!currentSubmission}
         onLockPortal={handleLockPortal}
-        onOpenSecurityModal={() => setIsSecurityModalOpen(true)}
-        activeRole={activePortalRole}
       />
 
       {/* Main Content Area */}
@@ -473,14 +447,6 @@ export default function App() {
         salary={viewingPaySlip}
         onClose={() => setViewingPaySlip(null)}
         month={currentSubmission?.month || 'Current Month'}
-      />
-
-      {/* Enterprise Company Portal Security & RBAC Center Modal */}
-      <CompanyPortalSecurityModal
-        isOpen={isSecurityModalOpen}
-        onClose={() => setIsSecurityModalOpen(false)}
-        activeRole={activePortalRole}
-        onRoleChanged={(newRole) => setActivePortalRole(newRole)}
       />
     </div>
   );
