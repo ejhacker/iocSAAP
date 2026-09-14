@@ -1,0 +1,6 @@
+{
+  "name": "IOCL Manpower & Attendance Payroll Portal",
+  "description": "Workforce deployment database, authorized Indian Oil site attendance matching, and automated salary disbursement system for IOCL contractor personnel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
